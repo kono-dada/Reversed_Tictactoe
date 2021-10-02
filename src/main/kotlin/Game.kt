@@ -11,14 +11,11 @@ import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
 
-class Game constructor(player1: Member, player2: Member, Wager: Int = 0) {
-    private var nowTurn = player1 //这储存了本回合的人
+class Game constructor(private val p1: Member, private val p2: Member) {
+    private var nowTurn = p1 //这储存了本回合的人
     private var chessBoard = ChessBoard()
     private var chessColor = Chess.WHITE
     private var running = false
-    val p1 = player1
-    val p2 = player2
-    private val wager = Wager
 
     /*
     游戏中会开启一个job，实时监听群里的消息，以此推进棋局进行
@@ -44,18 +41,18 @@ class Game constructor(player1: Member, player2: Member, Wager: Int = 0) {
                     play(pX, pY)
                     nextTurn()
                 } catch (e: Exception) {
-                    ply.group.sendMessage(At(ply) + "QAQ明乃搞不懂你要下哪里")
+                    ply.group.sendMessage(At(ply) + "QAQ搞不懂你要下哪里")
                 }
             }
         }
 
         globalEventChannel().subscribeAlways<QuitEvent> {
             if (ply == p1 || ply == p2) {
-                ply.group.sendMessage(PlainText("退出成功\n")+ At(ply)
-                        + PlainText("输给了")
-                        + At(theOtherPlayer(ply))
-                        + PlainText("${wager}个明乃币"))
-                settle(ply)
+                ply.group.sendMessage(
+                    PlainText("退出成功\n") + At(ply)
+                            + PlainText("输了")
+                )
+                settle()
             }
         }
     }
@@ -122,13 +119,11 @@ class Game constructor(player1: Member, player2: Member, Wager: Int = 0) {
             0 -> {
                 nowTurn.group.sendMessage(
                     PlainText("游戏结束\n")
-                            + At(nowTurn)
-                            + PlainText("输给了")
                             + At(theOtherPlayer())
-                            + PlainText("${wager}个明乃币")
+                            + PlainText("恭喜获胜")
                             + chessBoard.board().uploadAsImage(nowTurn.group)
                 )
-                settle(nowTurn)
+                settle()
             }
             1 -> {
                 nowTurn = theOtherPlayer()
@@ -151,9 +146,7 @@ class Game constructor(player1: Member, player2: Member, Wager: Int = 0) {
         }
     }
 
-    private fun settle(loser:Member){
-        loser.pay(wager)
-        theOtherPlayer(loser).addPoints(wager)
+    private fun settle() {
         this.running = false
         this.chessBoard = ChessBoard()
         game.cancel()
