@@ -8,7 +8,7 @@
 
 效果：
 
-![img](C:\Users\dada\IdeaProjects\mirai\reversedTictactoe\img.png)
+![img](https://github.com/kono-dada/Reversed_Tictactoe/blob/coin_free/img.png?raw=true)
 
 ## 游戏规则
 
